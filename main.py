@@ -1,10 +1,10 @@
 from tkinter import *
-import os
+# import os
 
 window = Tk()
 window.geometry("600x400")
 window.title("MS Paint")
-window.configure(bg="#008080")
+window.configure(bg="#A9A9A9")
 window.resizable(False, False)
 
 grid_frame = Frame(window)
@@ -24,16 +24,19 @@ gray = "#757575"
 
 SELECTED_COLOR = white
 
-class ColorButton():
+ShowMatrix = False
+
+class ColorButton:
     def __init__(self, color, x, y):
         self.color = color
 
-        def buttonClick(self):
+        def colorClick(self):
             global SELECTED_COLOR
             SELECTED_COLOR = self.color
 
-        color_button = Button(window, padx=18, pady=10, bg=self.color, command=lambda: buttonClick(self))
+        color_button = Button(window, padx=18, pady=10, bg=self.color, command=lambda: colorClick(self))
         color_button.place(x=x, y=y)
+
 
 
 red_button = ColorButton(red, 50, 50)
@@ -48,15 +51,14 @@ brown_button = ColorButton(brown, 100, 200)
 gray_button = ColorButton(gray, 100, 250)
 
 
-class Pixel():
+class Pixel:
+    global SELECTED_COLOR
     def __init__(self, state, row, column):
         self.x = row
         self.y = column
         self.state = state
 
         def pixelClick(self):
-            global SELECTED_COLOR
-            self.pixel_button['bg'] = SELECTED_COLOR
 
             if SELECTED_COLOR == white:
                 self.state = 0
@@ -90,12 +92,13 @@ class Pixel():
 
             grid.grid_matrix[self.x][self.y] = self.state
 
-
         self.pixel_button = Button(grid_frame, padx=8, bg=white, command=lambda: pixelClick(self))
         self.pixel_button.grid(row=row, column=column, sticky=N)
 
 
-class Grid():
+
+
+class Grid:
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -104,9 +107,9 @@ class Grid():
     def newGrid(self):
         for widget in grid_frame.winfo_children():
             widget.destroy()
-
         self.grid_matrix = []
         pixel_count = 0
+
         for y in range(self.y):
             row = []
             for x in range(self.x):
@@ -114,11 +117,20 @@ class Grid():
                 row.append(pixel.state)
             self.grid_matrix.append(row)
 
-    def printGrid(self):
-        for i in range(len(self.grid_matrix)-1):
-            print(self.grid_matrix[i])
+    def getGrid(self):
+        for y in range(self.y):
+            
 
+    def printGrid(self):
+        global ShowMatrix
+        for i in range(len(self.grid_matrix)):
+            print(self.grid_matrix[i])
+            ShowMatrix = True
         print(" ")
+
+
+
+
 
 grid = Grid(12, 12)
 grid.newGrid()
@@ -128,6 +140,9 @@ clear_button.place(x=50, y=350)
 
 print_grid_button = Button(window, text="Print", font=("arial", 12), bg=white, fg=black, command=grid.printGrid)
 print_grid_button.place(x=120, y=350)
+
+gridnum = Grid(12,12)
+
 
 
 window.mainloop()
