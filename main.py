@@ -1,6 +1,8 @@
 from tkinter import *
 from PIL import Image, ImageTk
-# import os
+import time
+import threading
+
 
 # window creation
 window = Tk()
@@ -141,54 +143,58 @@ brown_button = ColorButton(brown_hex, brown, 420, 475)
 gray_button = ColorButton(gray_hex, gray, 380, 475)
 black_button = ColorButton(black_hex, black, 340, 475)
 
+hover_x = 0
+hover_y = 0
+hold_down = True
+
+# def holdDown(e):
+#     global hold_down
+#     hold_down = True
+#
+# def letGo(e):
+#     global hold_down
+#     hold_down = False
+#
+# def clickBind():
+#     window.bind("<ButtonPress-1>", holdDown)
+#     window.bind("<ButtonRelease-1>", letGo)
+#
+# click_thread = threading.Thread(target=clickBind)
+# click_thread.start()
 
 class Pixel:
     global SELECTED_COLOR, SELECTED_NUMBER
+
     def __init__(self, state, row, column):
         self.x = row
         self.y = column
         self.state = state
 
-        def pixelClick(self):
-            global ShowMatrix
-            self.pixel_button['bg'] = SELECTED_COLOR
-            if ShowMatrix == True:
-                self.pixel_button['text'] = SELECTED_NUMBER
-
-            if SELECTED_COLOR == white_hex:
-                self.state = white
-
-            elif SELECTED_COLOR == red_hex:
-                self.state = red
-
-            elif SELECTED_COLOR == orange_hex:
-                self.state = orange
-
-            elif SELECTED_COLOR == yellow_hex:
-                self.state = yellow
-
-            elif SELECTED_COLOR == green_hex:
-                self.state = green
-
-            elif SELECTED_COLOR == blue_hex:
-                self.state = blue
-
-            elif SELECTED_COLOR == pink_hex:
-                self.state = pink
-
-            elif SELECTED_COLOR == brown_hex:
-                self.state = brown
-
-            elif SELECTED_COLOR == gray_hex:
-                self.state = gray
-
-            elif SELECTED_COLOR == black_hex:
-                self.state = black
-
-            grid.grid_matrix[self.x][self.y] = self.state
-
-        self.pixel_button = Button(grid_frame, text="  ",  padx=8, pady=3, bg=white_hex, command=lambda: pixelClick(self))
+        self.pixel_button = Label(grid_frame, bg=SELECTED_COLOR, fg="black", padx=8, pady=1)
         self.pixel_button.grid(row=row, column=column, sticky=N)
+
+        def hoverMouse(e):
+            global hover_x, hover_y
+            hover_x = self.x
+            hover_y = self.y
+            paintPixel()
+            print(hover_x, hover_y)
+
+        def paintPixel():
+            global hold_down
+            print("painting !")
+            for pixel in grid.grid_class_matrix:
+                if (hover_x == pixel.x and hover_y == pixel.y) and hold_down == True:
+                    pixel.pixel_button['bg'] = SELECTED_COLOR
+                    pixel.state = SELECTED_NUMBER
+                    if ShowMatrix == True:
+                        pixel.pixel_button['text'] = pixel.state
+                        pixel.pixel_button['padx'] = 5
+
+        self.pixel_button.bind("<Enter>", hoverMouse)
+
+    def __str__(self):
+        return f"Row: {self.x} Column: {self.y}".format(self=self)
 
 
 class Grid:
@@ -209,11 +215,7 @@ class Grid:
                 pixel = Pixel(0, x, y)
                 row.append(pixel.state)
                 self.grid_class_matrix.append(pixel)
-                print(self.grid_class_matrix)
             self.grid_matrix.append(row)
-
-    #def getGrid(self):
-        #for y in range(self.y):
 
 
     def printGrid(self):
@@ -224,14 +226,12 @@ class Grid:
 
     def showMatrix(self):
         global ShowMatrix
-        # for pixel in grid_frame.winfo_children():
-        #     pixel['text'] = pixel.state
 
         for i in range(len(self.grid_class_matrix)):
             self.grid_class_matrix[i].pixel_button['text'] = self.grid_class_matrix[i].state
+            self.grid_class_matrix[i].pixel_button['padx'] = 5
 
         ShowMatrix = True
-
 
     def hideMatrix(self):
         global ShowMatrix
@@ -240,8 +240,7 @@ class Grid:
 
         ShowMatrix = False
 
-
-grid = Grid(12, 12)
+grid = Grid(18, 18)
 grid.newGrid()
 
 VscrollL = Label(window, image=tk_VScroll)
@@ -264,8 +263,6 @@ InvertH_button = Button(window, image=tk_InvertHPic)
 InvertV_button = Button(window, image=tk_InvertVPic)
 Circle_button = Button(window, image=tk_CirclePic)
 Square_button = Button(window, image=tk_SquarePic)
-
-
 
 
 showMatrix_button.place(x=10, y=60)
