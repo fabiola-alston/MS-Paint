@@ -2,6 +2,7 @@ from tkinter import *
 from PIL import Image, ImageTk
 import time
 import threading
+import os
 
 
 # window creation
@@ -47,6 +48,18 @@ pink = 6
 brown = 7
 gray = 8
 black = 9
+
+# colors (ascii)
+white_ascii = " "
+red_ascii = "."
+orange_ascii = ":"
+yellow_ascii = "-"
+green_ascii = "="
+blue_ascii = "!"
+pink_ascii = "&"
+brown_ascii = "$"
+gray_ascii = "%"
+black_ascii = "@"
 
 
 # load button images
@@ -114,63 +127,55 @@ tk_HScroll = ImageTk.PhotoImage(HScroll)
 # global variable for changing the current selected color
 SELECTED_COLOR = white_hex
 SELECTED_NUMBER = white
+SELECTED_ASCII = white_ascii
 
 ShowMatrix = False
+ShowAsciiMatrix = False
 
 # class for buttons that change color
 class ColorButton:
-    def __init__(self, color, number, x, y):
+    def __init__(self, color, number, ascii, x, y):
         self.color = color
         self.number = number
+        self.ascii = ascii
 
         def colorClick(self):
-            global SELECTED_COLOR, SELECTED_NUMBER
+            global SELECTED_COLOR, SELECTED_NUMBER, SELECTED_ASCII
             SELECTED_COLOR = self.color
             SELECTED_NUMBER = self.number
+            SELECTED_ASCII = self.ascii
 
         color_button = Button(window, padx=11, pady=4, bg=self.color, command=lambda: colorClick(self))
         color_button.place(x=x, y=y)
 
 
-white_button = ColorButton(white_hex, white, 340, 430)
-red_button = ColorButton(red_hex, red, 380, 430)
-orange_button = ColorButton(orange_hex, orange, 420, 430)
-yellow_button = ColorButton(yellow_hex, yellow, 460, 430)
-green_button = ColorButton(green_hex, green, 500, 430)
-blue_button = ColorButton(blue_hex, blue, 500, 475)
-pink_button = ColorButton(pink_hex, pink, 460, 475)
-brown_button = ColorButton(brown_hex, brown, 420, 475)
-gray_button = ColorButton(gray_hex, gray, 380, 475)
-black_button = ColorButton(black_hex, black, 340, 475)
+white_button = ColorButton(white_hex, white, white_ascii, 340, 430)
+red_button = ColorButton(red_hex, red, red_ascii, 380, 430)
+orange_button = ColorButton(orange_hex, orange, orange_ascii, 420, 430)
+yellow_button = ColorButton(yellow_hex, yellow, yellow_ascii, 460, 430)
+green_button = ColorButton(green_hex, green, green_ascii, 500, 430)
+blue_button = ColorButton(blue_hex, blue, blue_ascii, 500, 475)
+pink_button = ColorButton(pink_hex, pink, pink_ascii, 460, 475)
+brown_button = ColorButton(brown_hex, brown, brown_ascii,420, 475)
+gray_button = ColorButton(gray_hex, gray, gray_ascii,380, 475)
+black_button = ColorButton(black_hex, black, black_ascii,340, 475)
 
 hover_x = 0
 hover_y = 0
 hold_down = True
 
-# def holdDown(e):
-#     global hold_down
-#     hold_down = True
-#
-# def letGo(e):
-#     global hold_down
-#     hold_down = False
-#
-# def clickBind():
-#     window.bind("<ButtonPress-1>", holdDown)
-#     window.bind("<ButtonRelease-1>", letGo)
-#
-# click_thread = threading.Thread(target=clickBind)
-# click_thread.start()
 
 class Pixel:
-    global SELECTED_COLOR, SELECTED_NUMBER
+    global SELECTED_COLOR, SELECTED_NUMBER, SELECTED_ASCII
 
     def __init__(self, state, row, column):
         self.x = row
         self.y = column
         self.state = state
+        self.color = SELECTED_COLOR
+        self.state_ascii = white_ascii
 
-        self.pixel_button = Label(grid_frame, bg=SELECTED_COLOR, fg="black", padx=8, pady=1)
+        self.pixel_button = Label(grid_frame, text=" ", bg=SELECTED_COLOR, fg="black", padx=5, pady=1, font=("courier new", 8))
         self.pixel_button.grid(row=row, column=column, sticky=N)
 
         def hoverMouse(e):
@@ -178,20 +183,48 @@ class Pixel:
             hover_x = self.x
             hover_y = self.y
             paintPixel()
-            print(hover_x, hover_y)
 
         def paintPixel():
-            global hold_down
-            print("painting !")
+            global ShowMatrix, ShowAsciiMatrix
             for pixel in grid.grid_class_matrix:
                 if (hover_x == pixel.x and hover_y == pixel.y) and hold_down == True:
                     pixel.pixel_button['bg'] = SELECTED_COLOR
+                    pixel.color = SELECTED_COLOR
                     pixel.state = SELECTED_NUMBER
+                    pixel.state_ascii = SELECTED_ASCII
+                    grid.grid_matrix[pixel.x][pixel.y] = SELECTED_NUMBER
+
                     if ShowMatrix == True:
                         pixel.pixel_button['text'] = pixel.state
                         pixel.pixel_button['padx'] = 5
 
+                    if ShowAsciiMatrix == True:
+                        pixel.pixel_button['text'] = pixel.state_ascii
+                        pixel.pixel_button['padx'] = 5
+
         self.pixel_button.bind("<Enter>", hoverMouse)
+
+    def updateColor(self):
+        if self.state == 0:
+            self.pixel_button['bg'] = white_hex
+        elif self.state == 1:
+            self.pixel_button['bg'] = red_hex
+        elif self.state == 2:
+            self.pixel_button['bg'] = orange_hex
+        elif self.state == 3:
+            self.pixel_button['bg'] = yellow_hex
+        elif self.state == 4:
+            self.pixel_button['bg'] = green_hex
+        elif self.state == 5:
+            self.pixel_button['bg'] = blue_hex
+        elif self.state == 6:
+            self.pixel_button['bg'] = pink_hex
+        elif self.state == 7:
+            self.pixel_button['bg'] = brown_hex
+        elif self.state == 8:
+            self.pixel_button['bg'] = gray_hex
+        elif self.state == 9:
+            self.pixel_button['bg'] = black_hex
 
     def __str__(self):
         return f"Row: {self.x} Column: {self.y}".format(self=self)
@@ -204,6 +237,7 @@ class Grid:
         self.grid_matrix = []
 
     def newGrid(self):
+        global SELECTED_COLOR, SELECTED_NUMBER
         for widget in grid_frame.winfo_children():
             widget.destroy()
         self.grid_matrix = []
@@ -212,17 +246,32 @@ class Grid:
         for y in range(self.y):
             row = []
             for x in range(self.x):
+                SELECTED_COLOR = white_hex
+                SELECTED_NUMBER = white
+
                 pixel = Pixel(0, x, y)
                 row.append(pixel.state)
+
                 self.grid_class_matrix.append(pixel)
             self.grid_matrix.append(row)
 
-
     def printGrid(self):
         global ShowMatrix
+
+        os.system("cls")
+
         for i in range(len(self.grid_matrix)):
             print(self.grid_matrix[i])
         print(" ")
+
+
+    def updateGrid(self):
+        i = 0
+        for y in range(len(self.grid_matrix)):
+            for x in range(len(self.grid_matrix[y])):
+                self.grid_class_matrix[i].state = self.grid_matrix[x][y]
+                self.grid_class_matrix[i].updateColor()
+                i+=1
 
     def showMatrix(self):
         global ShowMatrix
@@ -233,12 +282,64 @@ class Grid:
 
         ShowMatrix = True
 
-    def hideMatrix(self):
-        global ShowMatrix
+    def showAsciiMatrix(self):
+        global ShowAsciiMatrix
+
         for i in range(len(self.grid_class_matrix)):
-            self.grid_class_matrix[i].pixel_button['text'] = "  "
+            self.grid_class_matrix[i].pixel_button['text'] = self.grid_class_matrix[i].state_ascii
+            self.grid_class_matrix[i].pixel_button['padx'] = 5
+
+        ShowAsciiMatrix = True
+
+    def rotateRight(self):
+        print("rotate right !")
+        for pixel in self.grid_class_matrix:
+            pixel.pixel_button['bg'] = white_hex
+
+        rotated_matrix = []
+        for x in range(len(self.grid_matrix)):
+            y = len(self.grid_matrix)-1
+            rotated_row = []
+            for i in range(len(self.grid_matrix[x])):
+                rotated_row.append(self.grid_matrix[y][x])
+                y-=1
+            rotated_matrix.append(rotated_row)
+
+        self.grid_matrix = rotated_matrix
+
+        self.printGrid()
+        self.updateGrid()
+
+
+    def rotateLeft(self):
+        print("rotate left !")
+        for pixel in self.grid_class_matrix:
+            pixel.pixel_button['bg'] = white_hex
+
+        rotated_matrix = []
+
+        x = len(self.grid_matrix[0])-1
+        for i in range(len(self.grid_matrix[0])):
+            rotated_row = []
+            for y in range(len(self.grid_matrix[0])):
+                rotated_row.append(self.grid_matrix[y][x])
+
+            rotated_matrix.append(rotated_row)
+            x-=1
+
+        self.grid_matrix = rotated_matrix
+
+        self.printGrid()
+        self.updateGrid()
+
+
+    def hideMatrix(self):
+        global ShowMatrix, ShowAsciiMatrix
+        for i in range(len(self.grid_class_matrix)):
+            self.grid_class_matrix[i].pixel_button['text'] = " "
 
         ShowMatrix = False
+        ShowAsciiMatrix = False
 
 grid = Grid(18, 18)
 grid.newGrid()
@@ -249,37 +350,47 @@ VscrollL = Label(window, image=tk_VScroll)
 HscrollL = Label(window, image=tk_HScroll)
 #HscrollL.place(x=173, y=420)
 
-showMatrix_button = Button(window, image=tk_MatrixPic, command=lambda: grid.hideMatrix())
+hideMatrix_button = Button(window, image=tk_MatrixPic, command=lambda: grid.hideMatrix())
+hideMatrix_button.place(x=10, y=60)
+
 shownumbers_button = Button(window, image=tk_MatrixNumPic, command=lambda: grid.showMatrix())
-clear_button = Button(window, image=tk_MatrixClearPic, font=("arial", 12), bg=white_hex, fg=black_hex, command=grid.newGrid)
-showACII_button = Button(window, image=tk_MatrixACIIPic)
-NegativeMatrix_button = Button(window, image=tk_MatrixNegativePic)
-InvertedMatrix_button = Button(window, image=tk_MatrixInvertedPic)
-Zoomin_button = Button(window, image=tk_ZoominPic)
-Zoomout_button = Button(window, image=tk_ZoomoutPic)
-RotateR_button = Button(window, image=tk_RotateRPic)
-RotateL_button = Button(window, image=tk_RotateLPic)
-InvertH_button = Button(window, image=tk_InvertHPic)
-InvertV_button = Button(window, image=tk_InvertVPic)
-Circle_button = Button(window, image=tk_CirclePic)
-Square_button = Button(window, image=tk_SquarePic)
-
-
-showMatrix_button.place(x=10, y=60)
 shownumbers_button.place(x=90, y=60)
-NegativeMatrix_button.place(x=10, y=135)
-InvertedMatrix_button.place(x=90, y=135)
-clear_button.place(x=10,y=210)
-showACII_button.place(x=90, y=210)
-Zoomin_button.place(x=10,y=285)
-Zoomout_button.place(x=90,y=285)
-RotateL_button.place(x=10,y=360)
-RotateR_button.place(x=90,y=360)
-InvertH_button.place(x=10, y=435)
-InvertV_button.place(x=90, y=435)
-Circle_button.place(x=170, y=435)
-Square_button.place(x=250, y=435)
 
+clear_button = Button(window, image=tk_MatrixClearPic, font=("arial", 12), bg=white_hex, fg=black_hex, command=grid.newGrid)
+clear_button.place(x=10,y=210)
+
+showASCII_button = Button(window, image=tk_MatrixACIIPic, command=grid.showAsciiMatrix)
+showASCII_button.place(x=90, y=210)
+
+NegativeMatrix_button = Button(window, image=tk_MatrixNegativePic)
+NegativeMatrix_button.place(x=10, y=135)
+
+InvertedMatrix_button = Button(window, image=tk_MatrixInvertedPic)
+InvertedMatrix_button.place(x=90, y=135)
+
+Zoomin_button = Button(window, image=tk_ZoominPic)
+Zoomin_button.place(x=10,y=285)
+
+Zoomout_button = Button(window, image=tk_ZoomoutPic)
+Zoomout_button.place(x=90,y=285)
+
+RotateR_button = Button(window, image=tk_RotateRPic, command=grid.rotateRight)
+RotateR_button.place(x=90,y=360)
+
+RotateL_button = Button(window, image=tk_RotateLPic, command=grid.rotateLeft)
+RotateL_button.place(x=10,y=360)
+
+InvertH_button = Button(window, image=tk_InvertHPic)
+InvertH_button.place(x=10, y=435)
+
+InvertV_button = Button(window, image=tk_InvertVPic)
+InvertV_button.place(x=90, y=435)
+
+Circle_button = Button(window, image=tk_CirclePic)
+Circle_button.place(x=170, y=435)
+
+Square_button = Button(window, image=tk_SquarePic)
+Square_button.place(x=250, y=435)
 
 newfile_button = Button(header, text="New", underline=True,  font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT)
 newfile_button.place(x=10, y=5)
