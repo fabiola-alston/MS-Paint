@@ -3,6 +3,7 @@ from PIL import Image, ImageTk
 import time
 import threading
 import os
+from tkinter import filedialog
 
 
 # window creation
@@ -24,7 +25,10 @@ header.pack()
 grid_frame = Frame(window)
 grid_frame.place(relx=0.648, rely=0.45, anchor=CENTER)
 
+CreatorName = "Username"
+
 # colors (hex)
+
 white_hex = "#FFFFFF"
 red_hex = "#ff0000"
 orange_hex = "#ff7700"
@@ -93,7 +97,6 @@ tk_ZoominPic = ImageTk.PhotoImage(ZoominPic)
 
 ZoomoutPic= Image.open("zoomout.png")
 tk_ZoomoutPic = ImageTk.PhotoImage(ZoomoutPic)
-
 
 RotateLPic= Image.open("rotateleft.png")
 tk_RotateLPic = ImageTk.PhotoImage(RotateLPic)
@@ -204,6 +207,7 @@ class Pixel:
 
         self.pixel_button.bind("<Enter>", hoverMouse)
 
+
     def updateColor(self):
         if self.state == 0:
             self.pixel_button['bg'] = white_hex
@@ -255,10 +259,57 @@ class Grid:
                 self.grid_class_matrix.append(pixel)
             self.grid_matrix.append(row)
 
+    def Openfile(self):
+        openFile = filedialog.askopenfilename(filetypes=[('textfile', '.txt')],
+                                              defaultextension='.txt')
+        file = open(openFile, 'r')
+        self.updateGrid()
+        print(file.read())
+        file.close()
+
+    def saveGrid(self):
+        global CreatorName
+        savefileW = Toplevel(window)
+        savefileW.geometry('300x200')
+
+        savefileL = Label(savefileW, text="Save file as...", font=("Cascadia Mono", 10))
+
+        savefileL1 = Label(savefileW, text="Name:", underline=True, font=("Cascadia Mono", 10))
+        savefileL2 = Label(savefileW, text="Creator:", underline=True, font=("Cascadia Mono", 10))
+
+        savefileE1 = Entry(savefileW, relief="sunken", width=20)
+        savefileE2 = Entry(savefileW, relief="sunken", width=20)
+
+        savefileL.place(x=100, y=10)
+        savefileL1.place(x=50, y=45)
+        savefileL2.place(x=25, y=95)
+        savefileE1.place(x=100, y=50)
+        savefileE2.place(x=100, y=100)
+
+        def saveFile():
+            CreatorName = savefileE2.get()
+            save_path = 'C:/Users/tvcm0/OneDrive/Escritorio/Proyecto 2 - Intro/MS-Paint'
+
+            print(savefileE1.get())
+            name_of_file = savefileE1.get()
+            completeName = os.path.join(save_path, name_of_file + ".txt")
+
+            file1 = open(completeName, "w")
+            toFile = f"{grid.grid_matrix}"
+            file1.write(toFile)
+            file1.close()
+            creator.config(text=f"by - {CreatorName}")
+            savefileW.destroy()
+
+        savefileSB = Button(savefileW, text="Save", font=("Cascadia Mono", 10), command=saveFile)
+        savefileCB = Button(savefileW, text="Cancel", font=("Cascadia Mono", 10), command=savefileW.destroy)
+        savefileSB.place(x=80, y=150)
+        savefileCB.place(x=170, y=150)
+
     def printGrid(self):
         global ShowMatrix
 
-        os.system("cls")
+        #os.system("cls")
 
         for i in range(len(self.grid_matrix)):
             print(self.grid_matrix[i])
@@ -344,69 +395,57 @@ class Grid:
 grid = Grid(18, 18)
 grid.newGrid()
 
-VscrollL = Label(window, image=tk_VScroll)
-#VscrollL.place(x=520, y=60)
 
-HscrollL = Label(window, image=tk_HScroll)
-#HscrollL.place(x=173, y=420)
+
+#Placing tools on window
+
 
 hideMatrix_button = Button(window, image=tk_MatrixPic, command=lambda: grid.hideMatrix())
-hideMatrix_button.place(x=10, y=60)
-
 shownumbers_button = Button(window, image=tk_MatrixNumPic, command=lambda: grid.showMatrix())
-shownumbers_button.place(x=90, y=60)
-
 clear_button = Button(window, image=tk_MatrixClearPic, font=("arial", 12), bg=white_hex, fg=black_hex, command=grid.newGrid)
-clear_button.place(x=10,y=210)
-
 showASCII_button = Button(window, image=tk_MatrixACIIPic, command=grid.showAsciiMatrix)
-showASCII_button.place(x=90, y=210)
-
-NegativeMatrix_button = Button(window, image=tk_MatrixNegativePic)
-NegativeMatrix_button.place(x=10, y=135)
-
 InvertedMatrix_button = Button(window, image=tk_MatrixInvertedPic)
-InvertedMatrix_button.place(x=90, y=135)
-
+NegativeMatrix_button = Button(window, image=tk_MatrixNegativePic)
 Zoomin_button = Button(window, image=tk_ZoominPic)
-Zoomin_button.place(x=10,y=285)
-
 Zoomout_button = Button(window, image=tk_ZoomoutPic)
-Zoomout_button.place(x=90,y=285)
-
 RotateR_button = Button(window, image=tk_RotateRPic, command=grid.rotateRight)
-RotateR_button.place(x=90,y=360)
-
 RotateL_button = Button(window, image=tk_RotateLPic, command=grid.rotateLeft)
-RotateL_button.place(x=10,y=360)
-
-InvertH_button = Button(window, image=tk_InvertHPic)
-InvertH_button.place(x=10, y=435)
-
 InvertV_button = Button(window, image=tk_InvertVPic)
-InvertV_button.place(x=90, y=435)
-
+InvertH_button = Button(window, image=tk_InvertHPic)
 Circle_button = Button(window, image=tk_CirclePic)
-Circle_button.place(x=170, y=435)
-
 Square_button = Button(window, image=tk_SquarePic)
+
+
+
+openfile_button = Button(header, text="Open", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT,
+                         command=grid.Openfile)
+savefile_button = Button(header, text="Save", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT,
+                         command=grid.saveGrid)
+print_grid_button = Button(header, text="Print", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT, command=grid.printGrid)
+creator = Label(header, text=f"by - {CreatorName}", font=("Cascadia Mono", 10), bg= "snow3")
+
+
+
+hideMatrix_button.place(x=10, y=60)
+shownumbers_button.place(x=90, y=60)
+clear_button.place(x=10,y=210)
+showASCII_button.place(x=90, y=210)
+InvertedMatrix_button.place(x=10, y=135)
+NegativeMatrix_button.place(x=90, y=135)
+Zoomin_button.place(x=10,y=285)
+Zoomout_button.place(x=90,y=285)
+RotateR_button.place(x=90,y=360)
+RotateL_button.place(x=10,y=360)
+InvertV_button.place(x=10, y=435)
+InvertH_button.place(x=90, y=435)
+Circle_button.place(x=170, y=435)
 Square_button.place(x=250, y=435)
 
-newfile_button = Button(header, text="New", underline=True,  font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT)
-newfile_button.place(x=10, y=5)
+openfile_button.place(x=10, y=5)
+savefile_button.place(x=58, y=5)
+print_grid_button.place(x=110, y=5)
+creator.place(x=170, y=8)
 
-openfile_button = Button(header, text="Open", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT)
-openfile_button.place(x=50, y=5)
 
-savefile_button = Button(header, text="Save", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT)
-savefile_button.place(x=98, y=5)
-
-print_grid_button = Button(header, text="Print", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT, command=grid.printGrid)
-print_grid_button.place(x=140, y=5)
-
-creator_name = "creator name"
-
-creator = Label(header, text=f"by - {creator_name}", font=("Cascadia Mono", 10), bg= "snow3")
-creator.place(x=210, y=8)
 
 window.mainloop()
