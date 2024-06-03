@@ -259,7 +259,7 @@ class Grid:
 
         ShowMatrix = False
         ShowAsciiMatrix = False
-        
+
         for widget in grid_frame.winfo_children():
             widget.destroy()
         self.grid_matrix = []
@@ -395,7 +395,7 @@ class Grid:
     def drawCircle(self):
         pass
 
-    def invertColors(self):
+    def negativeColors(self):
         white_invert_list = [0, 1, 2, 3, 4]
         black_invert_list = [5, 6, 7, 8, 9]
 
@@ -416,6 +416,23 @@ class Grid:
 
                 if ShowAsciiMatrix == True:
                     pixel.pixel_button['text'] = black_ascii
+
+    def invertColors(self):
+        color_code = {white:black_hex,
+                      red:gray_hex,
+                      orange:brown_hex,
+                      yellow:pink_hex,
+                      green:blue_hex,
+                      blue:green_hex,
+                      pink:yellow_hex,
+                      brown:orange_hex,
+                      gray:red_hex,
+                      black:white_hex}
+
+        for pixel in grid.grid_class_matrix:
+            for state in color_code:
+                if pixel.state == state:
+                    pixel.pixel_button['bg'] = color_code[state]
 
 
     def hideMatrix(self):
@@ -450,10 +467,10 @@ clear_button.place(x=10,y=210)
 showASCII_button = Button(window, image=tk_MatrixACIIPic, command=grid.showAsciiMatrix)
 showASCII_button.place(x=90, y=210)
 
-NegativeMatrix_button = Button(window, image=tk_MatrixNegativePic, command=grid.invertColors)
+NegativeMatrix_button = Button(window, image=tk_MatrixNegativePic, command=grid.negativeColors)
 NegativeMatrix_button.place(x=10, y=135)
 
-InvertedMatrix_button = Button(window, image=tk_MatrixInvertedPic)
+InvertedMatrix_button = Button(window, image=tk_MatrixInvertedPic, command=grid.invertColors)
 InvertedMatrix_button.place(x=90, y=135)
 
 Zoomin_button = Button(window, image=tk_ZoominPic)
