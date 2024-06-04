@@ -23,8 +23,7 @@ header.pack()
 
 # frame for pixel grid
 grid_frame = Frame(window)
-# grid_frame.place(relx=0.648, rely=0.45, anchor=CENTER)
-grid_frame.place(x=165, y=60)
+grid_frame.place(relx=0.648, rely=0.45, anchor=CENTER)
 
 CreatorName = "Username"
 
@@ -127,14 +126,6 @@ HScroll = Image.open("HScrollBar.png")
 HScroll = HScroll.resize((396, 21), 3)
 tk_HScroll = ImageTk.PhotoImage(HScroll)
 
-no_img = Image.open("nosymbol.jpg")
-no_img = no_img.resize((396, 21), 3)
-no_tk = ImageTk.PhotoImage(no_img)
-
-brush = Image.open("brush.jpg")
-brush = brush.resize((396, 21), 3)
-brush_tk = ImageTk.PhotoImage(brush)
-
 
 # global variable for changing the current selected color
 SELECTED_COLOR = white_hex
@@ -174,16 +165,7 @@ black_button = ColorButton(black_hex, black, black_ascii,340, 475)
 
 hover_x = 0
 hover_y = 0
-drawing = False
-is_hovering = False
-
-def left_click_start(event):
-    global drawing, is_hovering
-
-    if is_hovering:
-        drawing = not drawing
-
-window.bind("<Button-1>", left_click_start)
+hold_down = True
 
 
 class Pixel:
@@ -200,24 +182,15 @@ class Pixel:
         self.pixel_button.grid(row=row, column=column, sticky=N)
 
         def hoverMouse(e):
-            global hover_x, hover_y, drawing, is_hovering
-
-            is_hovering = True
+            global hover_x, hover_y
             hover_x = self.x
             hover_y = self.y
-
-            if drawing:
-                paintPixel()
-
-        def notHovering(e):
-            global is_hovering
-
-            is_hovering = False
+            paintPixel()
 
         def paintPixel():
             global ShowMatrix, ShowAsciiMatrix
             for pixel in grid.grid_class_matrix:
-                if (hover_x == pixel.x and hover_y == pixel.y):
+                if (hover_x == pixel.x and hover_y == pixel.y) and hold_down == True:
                     pixel.pixel_button['bg'] = SELECTED_COLOR
                     pixel.color = SELECTED_COLOR
                     pixel.state = SELECTED_NUMBER
@@ -238,7 +211,6 @@ class Pixel:
                         pixel.pixel_button['padx'] = 5
 
         self.pixel_button.bind("<Enter>", hoverMouse)
-        self.pixel_button.bind("<Leave>", notHovering)
 
 
     def updateColor(self):
@@ -579,19 +551,6 @@ InvertV_button.place(x=10, y=435)
 InvertH_button.place(x=90, y=435)
 Circle_button.place(x=170, y=435)
 Square_button.place(x=250, y=435)
-
-def paintOrNoPaint(value):
-    global drawing
-    if value == 0:
-        drawing = True
-    else:
-        drawing = False
-
-no_button = Button(window, text='PAINT', font=("Cascadia Mono", 10), command= lambda: paintOrNoPaint(0))
-no_button.place(x=20, y=510)
-
-brush_button = Button(window, text='STOP PAINTING', font=("Cascadia Mono", 10), command=lambda: paintOrNoPaint(1))
-brush_button.place(x=100, y=510)
 
 newfile_button = Button(header, text="New", underline=True,  font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT)
 newfile_button.place(x=10, y=5)
