@@ -3,7 +3,9 @@ from PIL import Image, ImageTk
 import time
 import threading
 import os
+from tkinter import filedialog
 
+CreatorName = "Username"
 
 # window creation
 window = Tk()
@@ -466,6 +468,46 @@ class Grid:
         ShowMatrix = False
         ShowAsciiMatrix = False
 
+    def Openfile(self):
+        openFile = filedialog.askopenfilename(filetypes=[('textfile', '.txt')],
+                                              defaultextension='.txt')
+        file = open(openFile, 'r')
+        self.updateGrid()
+        print(file.read())
+        file.close()
+
+    def saveGrid(self):
+        global CreatorName
+        savefileW = Toplevel(window)
+        savefileW.geometry('200x140')
+
+        savefileL = Label(savefileW, text="Save file as...", font=("Cascadia Mono", 10))
+
+        savefileL2 = Label(savefileW, text="Creator:", underline=True, font=("Cascadia Mono", 10))
+
+        savefileE2 = Entry(savefileW, relief="sunken", width=15)
+
+        CreatorName = savefileE2.get()
+
+        savefileL.place(x=40, y=10)
+        savefileL2.place(x=15, y=50)
+        savefileE2.place(x=85, y=54)
+
+        def saveFile():
+            creator.config(text=f"by - {CreatorName}")
+            save_file = filedialog.asksaveasfile(defaultextension='.txt',
+                                                 filetypes=[("Text file", '.txt')])
+            save_file_text = str(grid.grid_matrix)
+            save_file.write(save_file_text)
+            save_file.close()
+            savefileW.destroy()
+            print(save_file.read)
+
+        savefileSB = Button(savefileW, text="Save", font=("Cascadia Mono", 10), command=saveFile)
+        savefileCB = Button(savefileW, text="Cancel", font=("Cascadia Mono", 10), command=savefileW.destroy)
+        savefileSB.place(x=35, y=95)
+        savefileCB.place(x=105, y=95)
+
 
 grid = Grid(18, 18)
 grid.newGrid()
@@ -534,10 +576,10 @@ brush_button.place(x=100, y=510)
 newfile_button = Button(header, text="New", underline=True,  font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT)
 newfile_button.place(x=10, y=5)
 
-openfile_button = Button(header, text="Open", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT)
+openfile_button = Button(header, text="Open", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT, command=grid.Openfile)
 openfile_button.place(x=50, y=5)
 
-savefile_button = Button(header, text="Save", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT)
+savefile_button = Button(header, text="Save", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT, command=grid.saveGrid)
 savefile_button.place(x=98, y=5)
 
 print_grid_button = Button(header, text="Print", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT, command=grid.printGrid)
