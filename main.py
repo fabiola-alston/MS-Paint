@@ -528,6 +528,7 @@ grid.newGrid()
 
 hideMatrix_button = Button(window, image=tk_MatrixPic, command=lambda: grid.hideMatrix())
 shownumbers_button = Button(window, image=tk_MatrixNumPic, command=lambda: grid.showMatrix())
+
 clear_button = Button(window, image=tk_MatrixClearPic, font=("arial", 12), bg=white_hex, fg=black_hex, command=grid.newGrid)
 showASCII_button = Button(window, image=tk_MatrixACIIPic, command=grid.showAsciiMatrix)
 showASCII_button.place(x=90, y=210)
@@ -538,8 +539,6 @@ NegativeMatrix_button.place(x=10, y=135)
 InvertedMatrix_button = Button(window, image=tk_MatrixInvertedPic, command=grid.invertColors)
 InvertedMatrix_button.place(x=90, y=135)
 
-InvertedMatrix_button = Button(window, image=tk_MatrixInvertedPic)
-NegativeMatrix_button = Button(window, image=tk_MatrixNegativePic)
 Zoomin_button = Button(window, image=tk_ZoominPic)
 Zoomout_button = Button(window, image=tk_ZoomoutPic)
 RotateR_button = Button(window, image=tk_RotateRPic, command=grid.rotateRight)
@@ -552,8 +551,6 @@ InvertH_button.place(x=10, y=435)
 InvertV_button = Button(window, image=tk_InvertVPic, command=grid.invertVertical)
 InvertV_button.place(x=90, y=435)
 
-InvertV_button = Button(window, image=tk_InvertVPic)
-InvertH_button = Button(window, image=tk_InvertHPic)
 Circle_button = Button(window, image=tk_CirclePic)
 Square_button = Button(window, image=tk_SquarePic)
 
