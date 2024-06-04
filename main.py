@@ -270,41 +270,34 @@ class Grid:
     def saveGrid(self):
         global CreatorName
         savefileW = Toplevel(window)
-        savefileW.geometry('300x200')
+        savefileW.geometry('200x140')
 
         savefileL = Label(savefileW, text="Save file as...", font=("Cascadia Mono", 10))
 
-        savefileL1 = Label(savefileW, text="Name:", underline=True, font=("Cascadia Mono", 10))
         savefileL2 = Label(savefileW, text="Creator:", underline=True, font=("Cascadia Mono", 10))
 
-        savefileE1 = Entry(savefileW, relief="sunken", width=20)
-        savefileE2 = Entry(savefileW, relief="sunken", width=20)
+        savefileE2 = Entry(savefileW, relief="sunken", width=15)
 
-        savefileL.place(x=100, y=10)
-        savefileL1.place(x=50, y=45)
-        savefileL2.place(x=25, y=95)
-        savefileE1.place(x=100, y=50)
-        savefileE2.place(x=100, y=100)
+        CreatorName = savefileE2.get()
+
+        savefileL.place(x=40, y=10)
+        savefileL2.place(x=15, y=50)
+        savefileE2.place(x=85, y=54)
 
         def saveFile():
-            CreatorName = savefileE2.get()
-            save_path = 'C:/Users/tvcm0/OneDrive/Escritorio/Proyecto 2 - Intro/MS-Paint'
-
-            print(savefileE1.get())
-            name_of_file = savefileE1.get()
-            completeName = os.path.join(save_path, name_of_file + ".txt")
-
-            file1 = open(completeName, "w")
-            toFile = f"{grid.grid_matrix}"
-            file1.write(toFile)
-            file1.close()
             creator.config(text=f"by - {CreatorName}")
+            save_file = filedialog.asksaveasfile(defaultextension='.txt',
+                                                 filetypes=[("Text file", '.txt')])
+            save_file_text = str(grid.grid_matrix)
+            save_file.write(save_file_text)
+            save_file.close()
             savefileW.destroy()
+            print(save_file.read)
 
         savefileSB = Button(savefileW, text="Save", font=("Cascadia Mono", 10), command=saveFile)
         savefileCB = Button(savefileW, text="Cancel", font=("Cascadia Mono", 10), command=savefileW.destroy)
-        savefileSB.place(x=80, y=150)
-        savefileCB.place(x=170, y=150)
+        savefileSB.place(x=35, y=95)
+        savefileCB.place(x=105, y=95)
 
     def printGrid(self):
         global ShowMatrix
