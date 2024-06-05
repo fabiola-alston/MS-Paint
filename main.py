@@ -36,7 +36,7 @@ green_hex = "#00ff00"
 blue_hex = "#0000ff"
 pink_hex = "#ff4df6"
 brown_hex = "#57270b"
-gray_hex = "#757575"
+gray_hex = "#c917ff"
 black_hex = "#000000"
 
 
@@ -160,8 +160,8 @@ yellow_button = ColorButton(yellow_hex, yellow, yellow_ascii, 460, 430)
 green_button = ColorButton(green_hex, green, green_ascii, 500, 430)
 blue_button = ColorButton(blue_hex, blue, blue_ascii, 500, 475)
 pink_button = ColorButton(pink_hex, pink, pink_ascii, 460, 475)
-brown_button = ColorButton(brown_hex, brown, brown_ascii,420, 475)
-gray_button = ColorButton(gray_hex, gray, gray_ascii,380, 475)
+brown_button = ColorButton(brown_hex, brown, brown_ascii,380, 475)
+gray_button = ColorButton(gray_hex, gray, gray_ascii,420, 475)
 black_button = ColorButton(black_hex, black, black_ascii,340, 475)
 
 hover_x = 0
@@ -243,24 +243,34 @@ class Pixel:
 
         if self.state == 0:
             self.pixel_button['bg'] = white_hex
+            self.state_ascii = white_ascii
         elif self.state == 1:
             self.pixel_button['bg'] = red_hex
+            self.state_ascii = red_ascii
         elif self.state == 2:
             self.pixel_button['bg'] = orange_hex
+            self.state_ascii = orange_ascii
         elif self.state == 3:
             self.pixel_button['bg'] = yellow_hex
+            self.state_ascii = yellow_ascii
         elif self.state == 4:
             self.pixel_button['bg'] = green_hex
+            self.state_ascii = green_ascii
         elif self.state == 5:
             self.pixel_button['bg'] = blue_hex
+            self.state_ascii = blue_ascii
         elif self.state == 6:
             self.pixel_button['bg'] = pink_hex
+            self.state_ascii = pink_ascii
         elif self.state == 7:
             self.pixel_button['bg'] = brown_hex
+            self.state_ascii = brown_ascii
         elif self.state == 8:
             self.pixel_button['bg'] = gray_hex
+            self.state_ascii = gray_ascii
         elif self.state == 9:
             self.pixel_button['bg'] = black_hex
+            self.state_ascii = black_ascii
 
         if self.state == black:
             self.pixel_button['fg'] = white_hex
@@ -278,7 +288,6 @@ class Pixel:
 
     def squareListen1(self):
         global square_posx1, square_posy1, done_drawing_square
-        print("Se llamo")
         square_posx1 = self.x
         square_posy1 = self.y
         if not done_drawing_square:
@@ -436,12 +445,10 @@ class Grid:
 
     def startSquare(self):
         global drawing, draw_enabled, hover_x, hover_y, done_drawing_square, is_hovering
-        print("SET SQUARE")
         done_drawing_square = False
         drawing = False
         draw_enabled = False
         was_clicked = False
-        print("click on square pos 1! ")
 
         def clickPaint(e):
             was_clicked = True
@@ -457,8 +464,6 @@ class Grid:
     def startSquare2(self):
         global done_drawing_square, is_hovering
         was_clicked = False
-
-        print("click on square pos 2!")
 
         def clickPaint(e):
             was_clicked = True
@@ -476,40 +481,42 @@ class Grid:
 
     def drawSquare(self):
         global square_posx1, square_posy1, square_posx2, square_posy2, draw_enabled, SELECTED_COLOR, done_drawing_square
-        print("draw square !!")
         for pixel in grid.grid_class_matrix:
             if pixel.x == square_posx1 and pixel.y == square_posy1:
-                print("first pixel")
                 pixel.pixel_button['bg'] = SELECTED_COLOR
+                grid.grid_matrix[pixel.y][pixel.x] = SELECTED_NUMBER
 
-        print("Left line")
         for i in range(square_posx2-square_posx1):
             for pixel in grid.grid_class_matrix:
                 if pixel.x == square_posx1 + i and pixel.y == square_posy1:
                     pixel.pixel_button['bg'] = SELECTED_COLOR
+                    # pixel.state = SELECTED_NUMBER
+                    grid.grid_matrix[pixel.y][pixel.x] = SELECTED_NUMBER
 
-        print("Right line")
         for i in range(square_posx2 - square_posx1):
             for pixel in grid.grid_class_matrix:
                 if pixel.x == square_posx1 + i and pixel.y == square_posy2:
                     pixel.pixel_button['bg'] = SELECTED_COLOR
+                    grid.grid_matrix[pixel.y][pixel.x] = SELECTED_NUMBER
 
-        print("Top line")
         for i in range(square_posy2 - square_posy1):
             for pixel in grid.grid_class_matrix:
                 if pixel.x == square_posx1  and pixel.y == square_posy1 + i:
                     pixel.pixel_button['bg'] = SELECTED_COLOR
+                    grid.grid_matrix[pixel.y][pixel.x] = SELECTED_NUMBER
 
-        print("Bottom line")
         for i in range(square_posy2 - square_posy1):
             for pixel in grid.grid_class_matrix:
                 if pixel.x == square_posx2 and pixel.y == square_posy1 + i:
                     pixel.pixel_button['bg'] = SELECTED_COLOR
+                    grid.grid_matrix[pixel.y][pixel.x] = SELECTED_NUMBER
 
         for pixel in grid.grid_class_matrix:
             if pixel.x == square_posx2 and pixel.y == square_posy2:
-                print("last pixel")
                 pixel.pixel_button['bg'] = SELECTED_COLOR
+                grid.grid_matrix[pixel.y][pixel.x] = SELECTED_NUMBER
+
+        grid.updateGrid()
 
         draw_enabled = True
         done_drawing_square = True
@@ -519,8 +526,6 @@ class Grid:
         square_posy2 = 0
 
         window.bind("<Button-1>", left_click_start)
-
-        print(done_drawing_square, draw_enabled)
 
     def drawRhomboid(self):
         pass
@@ -559,10 +564,24 @@ class Grid:
                       gray:red_hex,
                       black:white_hex}
 
+        color_code_numbers = {white: black,
+                      red: gray,
+                      orange: brown,
+                      yellow: pink,
+                      green: blue,
+                      blue: green,
+                      pink: yellow,
+                      brown: orange,
+                      gray: red,
+                      black: white}
+
         for pixel in grid.grid_class_matrix:
             for state in color_code:
                 if pixel.state == state:
                     pixel.pixel_button['bg'] = color_code[state]
+                    grid.grid_matrix[pixel.x][pixel.y] = color_code_numbers[state]
+
+        grid.updateGrid()
 
 
     def hideMatrix(self):
