@@ -202,7 +202,6 @@ class Pixel:
             global hover_x, hover_y, drawing, is_hovering, draw_enabled
 
             is_hovering = True
-
             hover_x = self.x
             hover_y = self.y
             if drawing and draw_enabled:
@@ -512,10 +511,6 @@ class Grid:
                 print("last pixel")
                 pixel.pixel_button['bg'] = SELECTED_COLOR
 
-
-
-
-
         draw_enabled = True
         done_drawing_square = True
         square_posx1 = 0
@@ -523,9 +518,9 @@ class Grid:
         square_posx2 = 0
         square_posy2 = 0
 
+        window.bind("<Button-1>", left_click_start)
+
         print(done_drawing_square, draw_enabled)
-
-
 
     def drawRhomboid(self):
         pass
