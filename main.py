@@ -25,7 +25,6 @@ header.pack()
 
 # frame for pixel grid
 grid_frame = Frame(window)
-# grid_frame.place(relx=0.648, rely=0.45, anchor=CENTER)
 grid_frame.place(x=165, y=60)
 
 # colors (hex)
@@ -98,7 +97,6 @@ tk_ZoominPic = ImageTk.PhotoImage(ZoominPic)
 ZoomoutPic= Image.open("zoomout.png")
 tk_ZoomoutPic = ImageTk.PhotoImage(ZoomoutPic)
 
-
 RotateLPic= Image.open("rotateleft.png")
 tk_RotateLPic = ImageTk.PhotoImage(RotateLPic)
 
@@ -118,15 +116,6 @@ tk_RhomboidPic = ImageTk.PhotoImage(RhomboidPic)
 SquarePic = Image.open("square.png")
 SquarePic = SquarePic.resize((60,60), 3)
 tk_SquarePic = ImageTk.PhotoImage(SquarePic)
-
-VScroll = Image.open("VScrollBar.png")
-VScroll = VScroll.resize((21, 375), 3)
-tk_VScroll = ImageTk.PhotoImage(VScroll)
-
-HScroll = Image.open("HScrollBar.png")
-HScroll = HScroll.resize((396, 21), 3)
-tk_HScroll = ImageTk.PhotoImage(HScroll)
-
 
 
 # global variable for changing the current selected color
@@ -587,10 +576,19 @@ class Grid:
     def Openfile(self):
         openFile = filedialog.askopenfilename(filetypes=[('textfile', '.txt')],
                                               defaultextension='.txt')
-        file = open(openFile, 'r')
-        self.updateGrid()
-        print(file.read())
-        file.close()
+        grid.grid_matrix = []
+        CreatorName = None
+        if openFile:
+            with open(openFile, 'r') as file:
+                CreatorName = str(file.readline().strip())
+                creator.configure(text=f"by - {CreatorName}")
+                for linea in file:
+                    fila = list(map(int, linea.split()))
+                    grid.grid_matrix.append(fila)
+            print(grid.grid_matrix)
+            print(CreatorName)
+            grid.updateGrid()
+
 
     def saveGrid(self):
         global CreatorName
@@ -603,21 +601,24 @@ class Grid:
 
         savefileE2 = Entry(savefileW, relief="sunken", width=15)
 
-        CreatorName = savefileE2.get()
-
         savefileL.place(x=40, y=10)
         savefileL2.place(x=15, y=50)
         savefileE2.place(x=85, y=54)
 
         def saveFile():
-            creator.config(text=f"by - {CreatorName}")
-            save_file = filedialog.asksaveasfile(defaultextension='.txt',
+            global CreatorName
+            CreatorName = savefileE2.get()
+            creator.configure(text=f"by - {savefileE2.get()}")
+            save_file = filedialog.asksaveasfilename(defaultextension='.txt',
                                                  filetypes=[("Text file", '.txt')])
-            save_file_text = str(grid.grid_matrix)
-            save_file.write(save_file_text)
-            save_file.close()
+            if save_file:
+                with open(save_file, 'w') as file:
+                    file.write(str(CreatorName) + '\n')
+                    for i in grid.grid_matrix:
+                        file.write(' '.join(map(str, i)) + '\n')
+                print(f'Matriz guardada en {save_file}')
+            print(savefileE2.get())
             savefileW.destroy()
-            print(save_file.read)
 
         savefileSB = Button(savefileW, text="Save", font=("Cascadia Mono", 10), command=saveFile)
         savefileCB = Button(savefileW, text="Cancel", font=("Cascadia Mono", 10), command=savefileW.destroy)
@@ -627,12 +628,6 @@ class Grid:
 
 grid = Grid(18, 18)
 grid.newGrid()
-
-VscrollL = Label(window, image=tk_VScroll)
-#VscrollL.place(x=520, y=60)
-
-HscrollL = Label(window, image=tk_HScroll)
-#HscrollL.place(x=173, y=420)
 
 hideMatrix_button = Button(window, image=tk_MatrixPic, command=lambda: grid.hideMatrix())
 hideMatrix_button.place(x=10, y=60)
@@ -689,9 +684,6 @@ no_button.place(x=20, y=510)
 brush_button = Button(window, text='STOP PAINTING', font=("Cascadia Mono", 10), command=lambda: paintOrNoPaint(1))
 brush_button.place(x=100, y=510)
 
-newfile_button = Button(header, text="New", underline=True,  font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT)
-newfile_button.place(x=10, y=5)
-
 openfile_button = Button(header, text="Open", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT, command=grid.Openfile)
 openfile_button.place(x=50, y=5)
 
@@ -701,9 +693,8 @@ savefile_button.place(x=98, y=5)
 print_grid_button = Button(header, text="Print", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT, command=grid.printGrid)
 print_grid_button.place(x=140, y=5)
 
-creator_name = "creator name"
 
-creator = Label(header, text=f"by - {creator_name}", font=("Cascadia Mono", 10), bg= "snow3")
+creator = Label(header, text=f"by - {CreatorName}", font=("Cascadia Mono", 10), bg= "snow3")
 creator.place(x=210, y=8)
 
 window.mainloop()
