@@ -110,9 +110,9 @@ tk_InvertHPic = ImageTk.PhotoImage(InvertHPic)
 InvertVPic= Image.open("invertV.png")
 tk_InvertVPic = ImageTk.PhotoImage(InvertVPic)
 
-CirclePic = Image.open("Circle.webp")
-CirclePic = CirclePic.resize((60,60), 3)
-tk_CirclePic = ImageTk.PhotoImage(CirclePic)
+RhomboidPic = Image.open("rhomboid.png")
+RhomboidPic = RhomboidPic.resize((60, 60), 3)
+tk_RhomboidPic = ImageTk.PhotoImage(RhomboidPic)
 
 SquarePic = Image.open("square.png")
 SquarePic = SquarePic.resize((60,60), 3)
@@ -168,11 +168,18 @@ hover_x = 0
 hover_y = 0
 drawing = False
 is_hovering = False
+draw_enabled = True
+square_posx1 = 0
+square_posy1 = 0
+square_posx2 = 0
+square_posy2 = 0
+square_pos1_set = False
+done_drawing_square = True
 
 def left_click_start(event):
-    global drawing, is_hovering
+    global drawing, is_hovering, draw_enabled
 
-    if is_hovering:
+    if is_hovering and draw_enabled:
         drawing = not drawing
 
 window.bind("<Button-1>", left_click_start)
@@ -192,13 +199,13 @@ class Pixel:
         self.pixel_button.grid(row=row, column=column, sticky=N)
 
         def hoverMouse(e):
-            global hover_x, hover_y, drawing, is_hovering
+            global hover_x, hover_y, drawing, is_hovering, draw_enabled
 
             is_hovering = True
 
             hover_x = self.x
             hover_y = self.y
-            if drawing:
+            if drawing and draw_enabled:
                 paintPixel()
 
         def notHovering(e):
@@ -269,6 +276,22 @@ class Pixel:
 
     def __str__(self):
         return f"Row: {self.x} Column: {self.y}".format(self=self)
+
+    def squareListen1(self):
+        global square_posx1, square_posy1, done_drawing_square
+        print("Se llamo")
+        square_posx1 = self.x
+        square_posy1 = self.y
+        if not done_drawing_square:
+            grid.startSquare2()
+
+
+    def squareListen2(self):
+        global square_posx2, square_posy2, done_drawing_square
+        square_posx2 = self.x
+        square_posy2 = self.y
+        if not done_drawing_square:
+            grid.drawSquare()
 
 
 class Grid:
@@ -412,10 +435,99 @@ class Grid:
         self.printGrid()
         self.updateGrid()
 
-    def drawSquare(self):
-        pass
+    def startSquare(self):
+        global drawing, draw_enabled, hover_x, hover_y, done_drawing_square, is_hovering
+        print("SET SQUARE")
+        done_drawing_square = False
+        drawing = False
+        draw_enabled = False
+        was_clicked = False
+        print("click on square pos 1! ")
 
-    def drawCircle(self):
+        def clickPaint(e):
+            was_clicked = True
+            window.bind("<B1-ButtonRelease>", clickRelease)
+
+        def clickRelease(e):
+            for pixel in grid.grid_class_matrix:
+                if (hover_x == pixel.x and hover_y == pixel.y) and not done_drawing_square and is_hovering:
+                    pixel.squareListen1()
+        if not was_clicked and not done_drawing_square:
+            window.bind("<Button-1>", clickPaint)
+
+    def startSquare2(self):
+        global done_drawing_square, is_hovering
+        was_clicked = False
+
+        print("click on square pos 2!")
+
+        def clickPaint(e):
+            was_clicked = True
+            window.bind("<B1-ButtonRelease>", clickRelease)
+
+        def clickRelease(e):
+            for pixel in grid.grid_class_matrix:
+                if hover_x == pixel.x and hover_y == pixel.y and not done_drawing_square and is_hovering:
+                    pixel.squareListen2()
+                    break
+
+        if was_clicked == False and not done_drawing_square:
+            window.bind("<Button-1>", clickPaint)
+
+
+    def drawSquare(self):
+        global square_posx1, square_posy1, square_posx2, square_posy2, draw_enabled, SELECTED_COLOR, done_drawing_square
+        print("draw square !!")
+        for pixel in grid.grid_class_matrix:
+            if pixel.x == square_posx1 and pixel.y == square_posy1:
+                print("first pixel")
+                pixel.pixel_button['bg'] = SELECTED_COLOR
+
+        print("Left line")
+        for i in range(square_posx2-square_posx1):
+            for pixel in grid.grid_class_matrix:
+                if pixel.x == square_posx1 + i and pixel.y == square_posy1:
+                    pixel.pixel_button['bg'] = SELECTED_COLOR
+
+        print("Right line")
+        for i in range(square_posx2 - square_posx1):
+            for pixel in grid.grid_class_matrix:
+                if pixel.x == square_posx1 + i and pixel.y == square_posy2:
+                    pixel.pixel_button['bg'] = SELECTED_COLOR
+
+        print("Top line")
+        for i in range(square_posy2 - square_posy1):
+            for pixel in grid.grid_class_matrix:
+                if pixel.x == square_posx1  and pixel.y == square_posy1 + i:
+                    pixel.pixel_button['bg'] = SELECTED_COLOR
+
+        print("Bottom line")
+        for i in range(square_posy2 - square_posy1):
+            for pixel in grid.grid_class_matrix:
+                if pixel.x == square_posx2 and pixel.y == square_posy1 + i:
+                    pixel.pixel_button['bg'] = SELECTED_COLOR
+
+        for pixel in grid.grid_class_matrix:
+            if pixel.x == square_posx2 and pixel.y == square_posy2:
+                print("last pixel")
+                pixel.pixel_button['bg'] = SELECTED_COLOR
+
+
+
+
+
+        draw_enabled = True
+        done_drawing_square = True
+        square_posx1 = 0
+        square_posy1 = 0
+        square_posx2 = 0
+        square_posy2 = 0
+
+        print(done_drawing_square, draw_enabled)
+
+
+
+    def drawRhomboid(self):
         pass
 
     def negativeColors(self):
@@ -554,18 +666,18 @@ InvertH_button.place(x=10, y=435)
 InvertV_button = Button(window, image=tk_InvertVPic, command=grid.invertVertical)
 InvertV_button.place(x=90, y=435)
 
-Circle_button = Button(window, image=tk_CirclePic)
-Circle_button.place(x=170, y=435)
+Rhomboid_button = Button(window, image=tk_RhomboidPic, command=grid.drawRhomboid)
+Rhomboid_button.place(x=170, y=435)
 
-Square_button = Button(window, image=tk_SquarePic)
+Square_button = Button(window, image=tk_SquarePic, command=grid.startSquare)
 Square_button.place(x=250, y=435)
 
 def paintOrNoPaint(value):
-    global drawing
+    global draw_enabled
     if value == 0:
-        drawing = True
+        draw_enabled = True
     else:
-        drawing = False
+        draw_enabled = False
 
 no_button = Button(window, text='PAINT', font=("Cascadia Mono", 10), command= lambda: paintOrNoPaint(0))
 no_button.place(x=20, y=510)
