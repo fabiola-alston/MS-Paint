@@ -4,6 +4,7 @@ import time
 import threading
 import os
 from tkinter import filedialog
+import math
 
 CreatorName = "Username"
 
@@ -29,14 +30,14 @@ grid_frame.place(x=165, y=60)
 
 # colors (hex)
 white_hex = "#FFFFFF"
-red_hex = "#ff0000"
-orange_hex = "#ff7700"
-yellow_hex = "#fffb17"
-green_hex = "#00ff00"
-blue_hex = "#0000ff"
-pink_hex = "#ff4df6"
-brown_hex = "#57270b"
-gray_hex = "#757575"
+red_hex = "#ff1f1f"
+orange_hex = "#ffa02b"
+yellow_hex = "#fff94a"
+green_hex = "#9eff42"
+blue_hex = "#3e1cff"
+pink_hex = "#ff66db"
+brown_hex = "#693c2f"
+gray_hex = "#ce1cff"
 black_hex = "#000000"
 
 
@@ -160,8 +161,8 @@ yellow_button = ColorButton(yellow_hex, yellow, yellow_ascii, 460, 430)
 green_button = ColorButton(green_hex, green, green_ascii, 500, 430)
 blue_button = ColorButton(blue_hex, blue, blue_ascii, 500, 475)
 pink_button = ColorButton(pink_hex, pink, pink_ascii, 460, 475)
-brown_button = ColorButton(brown_hex, brown, brown_ascii,420, 475)
-gray_button = ColorButton(gray_hex, gray, gray_ascii,380, 475)
+brown_button = ColorButton(brown_hex, brown, brown_ascii,380, 475)
+gray_button = ColorButton(gray_hex, gray, gray_ascii,420, 475)
 black_button = ColorButton(black_hex, black, black_ascii,340, 475)
 
 hover_x = 0
@@ -481,35 +482,43 @@ class Grid:
             if pixel.x == square_posx1 and pixel.y == square_posy1:
                 print("first pixel")
                 pixel.pixel_button['bg'] = SELECTED_COLOR
+                grid.grid_matrix[pixel.x][pixel.y] = SELECTED_NUMBER
 
         print("Left line")
-        for i in range(square_posx2-square_posx1):
+        for i in range(abs(square_posx2-square_posx1)):
             for pixel in grid.grid_class_matrix:
                 if pixel.x == square_posx1 + i and pixel.y == square_posy1:
                     pixel.pixel_button['bg'] = SELECTED_COLOR
+                    grid.grid_matrix[pixel.x][pixel.y] = SELECTED_NUMBER
 
         print("Right line")
-        for i in range(square_posx2 - square_posx1):
+        for i in range(abs(square_posx2 - square_posx1)):
             for pixel in grid.grid_class_matrix:
                 if pixel.x == square_posx1 + i and pixel.y == square_posy2:
                     pixel.pixel_button['bg'] = SELECTED_COLOR
+                    grid.grid_matrix[pixel.x][pixel.y] = SELECTED_NUMBER
 
         print("Top line")
-        for i in range(square_posy2 - square_posy1):
+        for i in range(abs(square_posy2 - square_posy1)):
             for pixel in grid.grid_class_matrix:
                 if pixel.x == square_posx1  and pixel.y == square_posy1 + i:
                     pixel.pixel_button['bg'] = SELECTED_COLOR
+                    grid.grid_matrix[pixel.x][pixel.y] = SELECTED_NUMBER
 
         print("Bottom line")
-        for i in range(square_posy2 - square_posy1):
+        for i in range(abs(square_posy2 - square_posy1)):
             for pixel in grid.grid_class_matrix:
                 if pixel.x == square_posx2 and pixel.y == square_posy1 + i:
                     pixel.pixel_button['bg'] = SELECTED_COLOR
+                    grid.grid_matrix[pixel.x][pixel.y] = SELECTED_NUMBER
 
         for pixel in grid.grid_class_matrix:
             if pixel.x == square_posx2 and pixel.y == square_posy2:
                 print("last pixel")
                 pixel.pixel_button['bg'] = SELECTED_COLOR
+                grid.grid_matrix[pixel.x][pixel.y] = SELECTED_NUMBER
+
+        grid.updateGrid()
 
         draw_enabled = True
         done_drawing_square = True
