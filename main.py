@@ -235,24 +235,34 @@ class Pixel:
 
         if self.state == 0:
             self.pixel_button['bg'] = white_hex
+            hex = white_hex
         elif self.state == 1:
             self.pixel_button['bg'] = red_hex
+            hex = red_hex
         elif self.state == 2:
             self.pixel_button['bg'] = orange_hex
+            hex = orange_hex
         elif self.state == 3:
             self.pixel_button['bg'] = yellow_hex
+            hex = yellow_hex
         elif self.state == 4:
             self.pixel_button['bg'] = green_hex
+            hex = green_hex
         elif self.state == 5:
             self.pixel_button['bg'] = blue_hex
+            hex = blue_hex
         elif self.state == 6:
             self.pixel_button['bg'] = pink_hex
+            hex = pink_hex
         elif self.state == 7:
             self.pixel_button['bg'] = brown_hex
+            hex = brown_hex
         elif self.state == 8:
             self.pixel_button['bg'] = gray_hex
+            hex = gray_hex
         elif self.state == 9:
             self.pixel_button['bg'] = black_hex
+            hex = black_hex
 
         if self.state == black:
             self.pixel_button['fg'] = white_hex
@@ -264,6 +274,8 @@ class Pixel:
 
         if ShowAsciiMatrix == True:
             self.pixel_button['text'] = self.state_ascii
+
+        print(hex, self)
 
     def __str__(self):
         return f"Row: {self.x} Column: {self.y}".format(self=self)
@@ -352,7 +364,7 @@ class Grid:
         for y in range(len(self.grid_matrix)):
             new_row = []
             for x in range(len(self.grid_matrix[y])):
-                self.grid_class_matrix[i].state = self.grid_matrix[y][x]
+                self.grid_class_matrix[i].state = self.grid_matrix[x][y]
                 self.grid_class_matrix[i].updateColor()
                 new_row.append(self.grid_class_matrix[i].state)
                 i += 1
@@ -856,18 +868,18 @@ Rhomboid_button.place(x=170, y=435)
 Square_button = Button(window, image=tk_SquarePic, command=lambda: grid.selectArea1(0))
 Square_button.place(x=250, y=435)
 
-def paintOrNoPaint(value):
-    global draw_enabled
-    if value == 0:
-        draw_enabled = True
-    else:
-        draw_enabled = False
-
-no_button = Button(window, text='PAINT', font=("Cascadia Mono", 10), command= lambda: paintOrNoPaint(0))
-no_button.place(x=20, y=510)
-
-brush_button = Button(window, text='STOP PAINTING', font=("Cascadia Mono", 10), command=lambda: paintOrNoPaint(1))
-brush_button.place(x=100, y=510)
+# def paintOrNoPaint(value):
+#     global draw_enabled
+#     if value == 0:
+#         draw_enabled = True
+#     else:
+#         draw_enabled = False
+#
+# no_button = Button(window, text='PAINT', font=("Cascadia Mono", 10), command= lambda: paintOrNoPaint(0))
+# no_button.place(x=20, y=510)
+#
+# brush_button = Button(window, text='STOP PAINTING', font=("Cascadia Mono", 10), command=lambda: paintOrNoPaint(1))
+# brush_button.place(x=100, y=510)
 
 openfile_button = Button(header, text="Open", underline=True, font=("Cascadia Mono", 10), bg= "snow3", relief=FLAT, command=grid.Openfile)
 openfile_button.place(x=50, y=5)
