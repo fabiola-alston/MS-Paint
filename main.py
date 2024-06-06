@@ -165,6 +165,8 @@ square_posx2 = 0
 square_posy2 = 0
 square_pos1_set = False
 done_drawing_square = True
+rhomboid_mode = False
+zoom_in_mode = False
 
 def left_click_start(event):
     global drawing, is_hovering, draw_enabled
@@ -272,15 +274,19 @@ class Pixel:
         square_posx1 = self.x
         square_posy1 = self.y
         if not done_drawing_square:
-            grid.startSquare2()
+            grid.selectArea2()
 
 
     def squareListen2(self):
-        global square_posx2, square_posy2, done_drawing_square
+        global square_posx2, square_posy2, done_drawing_square, rhomboid_mode, zoom_in_mode
         square_posx2 = self.x
         square_posy2 = self.y
-        if not done_drawing_square:
+        if not done_drawing_square and not rhomboid_mode and not zoom_in_mode:
             grid.drawSquare()
+        elif not done_drawing_square and rhomboid_mode and not zoom_in_mode:
+            grid.drawRhomboid()
+        elif not done_drawing_square and not rhomboid_mode and zoom_in_mode:
+            grid.zoomIn()
 
 
 class Grid:
@@ -288,6 +294,15 @@ class Grid:
         self.x = x
         self.y = y
         self.grid_matrix = []
+        self.saved_grid_matrix = []
+        self.saved_grid_class_matrix = []
+        self.zoomed_grid = None
+
+    def deleteGrid(self):
+        for widget in grid_frame.winfo_children():
+            widget.destroy()
+        self.grid_matrix = []
+        self.grid_class_matrix = []
 
     def newGrid(self):
         global SELECTED_COLOR, SELECTED_NUMBER, ShowMatrix, ShowAsciiMatrix
@@ -326,9 +341,23 @@ class Grid:
         i = 0
         for y in range(len(self.grid_matrix)):
             for x in range(len(self.grid_matrix[y])):
+
                 self.grid_class_matrix[i].state = self.grid_matrix[x][y]
                 self.grid_class_matrix[i].updateColor()
                 i+=1
+
+    def updateGridClassMatrix(self):
+        i = 0
+        print(len(self.grid_class_matrix))
+        for y in range(len(self.grid_matrix)):
+            for x in range(len(self.grid_matrix[y])):
+                #self.grid_class_matrix.append(self.grid_matrix[y][x])
+                self.grid_class_matrix[i].state = self.grid_matrix[y][x]
+                self.grid_class_matrix[i].updateColor()
+                i += 1
+
+        # for i in range(len(self.grid_class_matrix)):
+        #     self.grid_class_matrix[i].updateColor()
 
     def showMatrix(self):
         global ShowMatrix
@@ -424,14 +453,25 @@ class Grid:
         self.printGrid()
         self.updateGrid()
 
-    def startSquare(self):
-        global drawing, draw_enabled, hover_x, hover_y, done_drawing_square, is_hovering
+    def selectArea1(self, mode):
+        global drawing, draw_enabled, hover_x, hover_y, done_drawing_square, is_hovering, rhomboid_mode, zoom_in_mode
         print("SET SQUARE")
         done_drawing_square = False
         drawing = False
         draw_enabled = False
         was_clicked = False
         print("click on square pos 1! ")
+
+        if mode == 0:
+            rhomboid_mode = False
+            zoom_in_mode = False
+        elif mode == 1:
+            rhomboid_mode = True
+            zoom_in_mode = False
+        elif mode == 2:
+            rhomboid_mode = False
+            zoom_in_mode = True
+
 
         def clickPaint(e):
             was_clicked = True
@@ -444,7 +484,7 @@ class Grid:
         if not was_clicked and not done_drawing_square:
             window.bind("<Button-1>", clickPaint)
 
-    def startSquare2(self):
+    def selectArea2(self):
         global done_drawing_square, is_hovering
         was_clicked = False
 
@@ -521,7 +561,90 @@ class Grid:
         print(done_drawing_square, draw_enabled)
 
     def drawRhomboid(self):
-        pass
+        global square_posx1, square_posy1, square_posx2, square_posy2, draw_enabled, SELECTED_COLOR, done_drawing_square
+        print("draw square !!")
+        for pixel in grid.grid_class_matrix:
+            if pixel.x == square_posx1 and pixel.y == square_posy1 + 3:
+                print("first pixel")
+                pixel.pixel_button['bg'] = SELECTED_COLOR
+                grid.grid_matrix[pixel.x][pixel.y] = SELECTED_NUMBER
+
+
+        print("Top line")
+        for i in range(abs(square_posy2 - square_posy1 + 1)):
+            if i > 3:
+                for pixel in grid.grid_class_matrix:
+                    if pixel.x == square_posx1 and pixel.y == square_posy1 + i:
+                        pixel.pixel_button['bg'] = SELECTED_COLOR
+                        grid.grid_matrix[pixel.x][pixel.y] = SELECTED_NUMBER
+
+        print("Bottom line")
+        for i in range(abs(square_posy2 - square_posy1)):
+            if i < (square_posy2 - square_posy1 - 3):
+                for pixel in grid.grid_class_matrix:
+                    if pixel.x == square_posx2 and pixel.y == square_posy1 + i:
+                        pixel.pixel_button['bg'] = SELECTED_COLOR
+                        grid.grid_matrix[pixel.x][pixel.y] = SELECTED_NUMBER
+
+        for pixel in grid.grid_class_matrix:
+            if pixel.x == square_posx2 and pixel.y == square_posy2 - 3:
+                print("last pixel")
+                pixel.pixel_button['bg'] = SELECTED_COLOR
+                grid.grid_matrix[pixel.x][pixel.y] = SELECTED_NUMBER
+
+        diag_size = square_posx2 - square_posx1 - 1
+        diag_column_size = diag_size // 3
+        diag_extra_column_size = diag_size % 3
+
+        x = 1
+        # right diagonal
+        for i in range(3):
+            for j in range(diag_column_size):
+                for pixel in grid.grid_class_matrix:
+                    if pixel.y == square_posx2 - x and pixel.x == (square_posy2 - 3) + i:
+                        pixel.pixel_button['bg'] = SELECTED_COLOR
+                        grid.grid_matrix[pixel.y][pixel.x] = SELECTED_NUMBER
+                        x+=1
+                        last_pixelx_right = (square_posy2 - 3) + i
+                        last_pixely_right = square_posx2 - x
+
+
+        for i in range(diag_extra_column_size):
+            for pixel in grid.grid_class_matrix:
+                if pixel.y == square_posx1 + 1 + i and pixel.x == square_posy2:
+                    pixel.pixel_button['bg'] = SELECTED_COLOR
+                    grid.grid_matrix[pixel.y][pixel.x] = SELECTED_NUMBER
+                    x+=1
+
+        # left diagonal
+        x = 1
+        for i in range(3):
+            for j in range(diag_column_size):
+                for pixel in grid.grid_class_matrix:
+                    if pixel.y == square_posx2 - x and pixel.x == square_posy1 + i:
+                        pixel.pixel_button['bg'] = SELECTED_COLOR
+                        grid.grid_matrix[pixel.y][pixel.x] = SELECTED_NUMBER
+                        x+=1
+
+        for i in range(diag_extra_column_size):
+            for pixel in grid.grid_class_matrix:
+                if pixel.y == square_posx1 + 1 + i and pixel.x == square_posy1 + 3:
+                    pixel.pixel_button['bg'] = SELECTED_COLOR
+                    grid.grid_matrix[pixel.y][pixel.x] = SELECTED_NUMBER
+                    x+=1
+
+
+
+        grid.updateGrid()
+
+        draw_enabled = True
+        done_drawing_square = True
+        square_posx1 = 0
+        square_posy1 = 0
+        square_posx2 = 0
+        square_posy2 = 0
+
+        window.bind("<Button-1>", left_click_start)
 
     def negativeColors(self):
         white_invert_list = [0, 1, 2, 3, 4]
@@ -625,6 +748,62 @@ class Grid:
         savefileSB.place(x=35, y=95)
         savefileCB.place(x=105, y=95)
 
+    def zoomIn(self):
+        global square_posx1, square_posy1, square_posx2, square_posy2
+        print("zoom in")
+
+        x1 = square_posy1
+        y1 = square_posx1
+        x2 = square_posy2
+        y2 = square_posx2
+
+        zoomed_matrix = []
+        for i in range(y2 - y1):
+            zoomed_row = []
+            for j in range(x2 - x1):
+                x = self.grid_matrix[y1 + i][x1 + j]
+                zoomed_row.append(x)
+            zoomed_matrix.append(zoomed_row)
+
+        for row in zoomed_matrix:
+            print(row)
+
+        self.saved_grid_matrix = self.grid_matrix
+        self.saved_grid_class_matrix = self.grid_class_matrix
+
+        self.deleteGrid()
+
+        grid2 = Grid(len(zoomed_matrix), len(zoomed_matrix[0]))
+        grid2.newGrid()
+        grid2.grid_matrix = zoomed_matrix
+
+        self.zoomed_grid = grid2
+
+        grid2.updateGridClassMatrix()
+
+        square_posx1 = 0
+        square_posy1 = 0
+        square_posx2 = 0
+        square_posy2 = 0
+
+        # grid.updateGrid()
+
+    def zoomOut(self):
+        global draw_enabled, SELECTED_COLOR, done_drawing_square
+        draw_enabled = True
+        done_drawing_square = True
+        SELECTED_COLOR = white_hex
+        SELECTED_NUMBER = white
+        SELECTED_ASCII = white_ascii
+
+        self.zoomed_grid.deleteGrid()
+
+        self.newGrid()
+        self.grid_matrix = self.saved_grid_matrix
+        self.updateGrid()
+
+        window.bind("<Button-1>", left_click_start)
+
 
 grid = Grid(18, 18)
 grid.newGrid()
@@ -647,10 +826,10 @@ NegativeMatrix_button.place(x=10, y=135)
 InvertedMatrix_button = Button(window, image=tk_MatrixInvertedPic, command=grid.invertColors)
 InvertedMatrix_button.place(x=90, y=135)
 
-Zoomin_button = Button(window, image=tk_ZoominPic)
+Zoomin_button = Button(window, image=tk_ZoominPic, command=lambda: grid.selectArea1(2))
 Zoomin_button.place(x=10,y=285)
 
-Zoomout_button = Button(window, image=tk_ZoomoutPic)
+Zoomout_button = Button(window, image=tk_ZoomoutPic, command=grid.zoomOut)
 Zoomout_button.place(x=90,y=285)
 
 RotateR_button = Button(window, image=tk_RotateRPic, command=grid.rotateRight)
@@ -665,10 +844,10 @@ InvertH_button.place(x=10, y=435)
 InvertV_button = Button(window, image=tk_InvertVPic, command=grid.invertVertical)
 InvertV_button.place(x=90, y=435)
 
-Rhomboid_button = Button(window, image=tk_RhomboidPic, command=grid.drawRhomboid)
+Rhomboid_button = Button(window, image=tk_RhomboidPic, command=lambda: grid.selectArea1(1))
 Rhomboid_button.place(x=170, y=435)
 
-Square_button = Button(window, image=tk_SquarePic, command=grid.startSquare)
+Square_button = Button(window, image=tk_SquarePic, command=lambda: grid.selectArea1(0))
 Square_button.place(x=250, y=435)
 
 def paintOrNoPaint(value):
