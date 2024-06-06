@@ -348,13 +348,19 @@ class Grid:
 
     def updateGridClassMatrix(self):
         i = 0
-        print(len(self.grid_class_matrix))
+        new_matrix = []
         for y in range(len(self.grid_matrix)):
+            new_row = []
             for x in range(len(self.grid_matrix[y])):
-                #self.grid_class_matrix.append(self.grid_matrix[y][x])
                 self.grid_class_matrix[i].state = self.grid_matrix[y][x]
                 self.grid_class_matrix[i].updateColor()
+                new_row.append(self.grid_class_matrix[i].state)
                 i += 1
+            new_matrix.append(new_row)
+
+        print(" ")
+        for row in new_matrix:
+            print(row)
 
         # for i in range(len(self.grid_class_matrix)):
         #     self.grid_class_matrix[i].updateColor()
